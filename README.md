@@ -1,4 +1,4 @@
-# CS 179: GPU Computing Final Project -- Particle Swarm Optimization (PSO)
+# CS 179 Final Project -- Particle Swarm Optimization (PSO)
 Helena Wu 
 
 ## Motivation
