@@ -108,9 +108,9 @@ void check_args(int argc, char **argv) {
 int large_benchmark_test(int argc, char **argv) {
     check_args(argc, argv);
 
-    const unsigned int benchmark = atoi(argv[1]);
+    const int benchmark = atoi(argv[1]);
     // Dimension of solutions to the optimization problem (Rosenbrock dim = 2)
-    unsigned int dim;
+    int dim;
     if (benchmark != 0) {
         dim = atoi(argv[2]);
     }
@@ -118,7 +118,7 @@ int large_benchmark_test(int argc, char **argv) {
         dim = 2;
     }
 
-    const unsigned int num_particles = atoi(argv[3]);
+    const int num_particles = atoi(argv[3]);
 
     // Constants for PSO update equation from literature
     // https://www.researchgate.net/post/How_do_I_select_the_Particle_Swarm_Optimization_parameters

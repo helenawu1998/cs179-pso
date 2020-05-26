@@ -16,5 +16,5 @@ make pso
 # Test Rastrigin's Benchmark (benchmark test 1) (2 dim), 40 particles
 ./pso 1 2 40 512 512
 
-# Test Rastrigin's Benchmark (benchmark test 1) (4 dim), 40 particles
-./pso 1 4 40 512 512
+# Test Rastrigin's Benchmark (benchmark test 1) (3 dim), 400 particles
+./pso 1 3 400 512 512
