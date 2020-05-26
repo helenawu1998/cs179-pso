@@ -123,8 +123,8 @@ int large_benchmark_test(int argc, char **argv) {
     // Constants for PSO update equation from literature
     // https://www.researchgate.net/post/How_do_I_select_the_Particle_Swarm_Optimization_parameters
     const float c1 = 2.025;
-    const float c2 = 2.025;
-    const float w = 0.65;
+    const float c2 = 1.025;
+    const float w = 0.85;
 
     // Space for storing the population of solutions (of size vector_size)
     float *solutions = (float *) malloc(sizeof (float) * dim * num_particles);
@@ -165,8 +165,8 @@ int large_benchmark_test(int argc, char **argv) {
         int num_iterations = 0;
         // Optimize until stopping condition reached
         while (abs(cost(benchmark, g_best, dim)) > 0.0001) {
-            cout << "Iteration " << num_iterations << endl;
-            cout << "Global min value: " << cost(benchmark, g_best, dim) << endl << endl;
+            // cout << "Iteration " << num_iterations << endl;
+            // cout << "Global min value: " << cost(benchmark, g_best, dim) << endl << endl;
             num_iterations += 1;
             // Iterate for each particle in the population
             for (int i = 0; i < num_particles; i++) {
