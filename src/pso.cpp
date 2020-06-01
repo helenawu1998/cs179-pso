@@ -19,53 +19,13 @@
 #include <iostream>
 #include <time.h>
 
-#define PI 3.14159265358979
 // #include <cuda_runtime.h>
+#include "benchmark_functions.h"
 // #include <algorithm>
 // #include <cassert>
 
 // #include "pso.cuh"
-
 using namespace std;
-
-/* Benchmark optimization problem known in literature as Rosenbrock's function.
- * The minimum of the function is at (1, 1) with value 0. We search in the
- * domain [-5.12, 5.12]^2 as in other benchmark tests.
- */
-float rosenbrock(float* solution) {
-    // Penalize solutions that are out of the domain
-    if (solution[0] < -5.12 || solution[0] > 5.12 || solution[1] < -5.12 || solution[1] > 5.12 ){
-        return 1000;
-    }
-    return (100 * pow(pow(solution[0], 2) - solution[1], 2) +
-        pow(1 - solution[0], 2));
-}
-
-/* Benchmark optimization problem known in literature as the Rastrigin function.
- * The minimum of the function is at (0, 0, 0, 0) with value 0. We search in the
- * domain [-5.12, 5.12]^dim as in other benchmark tests.
- */
-float rastrigin(float* solution, int dim) {
-    float ans = 10 * dim;
-    // Penalize solutions that are out of the domain. Otherwise compute objective.
-    for (int i = 0; i < dim; i++) {
-        if (solution[i] < -5.12 || solution[i] > 5.12)
-            return 1000;
-        ans += pow(solution[i], 2) - 10 * cos(2 * PI * solution[i]);
-    }
-    return ans;
-}
-
-/* Returns the value of the objective function, which we are trying to minimize.
- * User defines which objective function to use for benchmark tests.
- */
-float cost(int objective, float* solution, int dim) {
-    if (objective == 0)
-        return rosenbrock(solution);
-    else {
-        return rastrigin(solution, dim);
-    }
-}
 
 
 /* Update the velocity according to the iteration equation of algorithm:
@@ -206,19 +166,19 @@ int large_benchmark_test(int argc, char **argv) {
         // cudaEventSynchronize(stop_cpu);
 
         // GPU PSO algorithm
-        cout << endl << "TODO: GPU version of PSO (WIP)" << endl << endl;
+        cout << endl << "Running GPU version of PSO..." << endl << endl;
 
         // Cap the number of blocks
-        // const unsigned int local_size = atoi(argv[4]);
-        // const unsigned int max_blocks = atoi(argv[5]);
-        // const unsigned int blocks = std::min(max_blocks,
-        //     (unsigned int) ceil(num_particles / (float) local_size));
+        const unsigned int local_size = atoi(argv[4]);
+        const unsigned int max_blocks = atoi(argv[5]);
+        const unsigned int blocks = std::min(max_blocks,
+            (unsigned int) ceil(num_particles / (float) local_size));
 
         // Call our exposed entry point to our GPU kernel handler
         // float gpu_time_milliseconds = cuda_call_pso_kernel(blocks, local_size,
         //                                                     input_data);
 
-        // cout << "Comparing..." << endl;
+        cout << "Comparing..." << endl;
 
         // Compare results
         // bool success = true;
@@ -234,7 +194,7 @@ int large_benchmark_test(int argc, char **argv) {
         // cout << "GPU time: " << gpu_time_milliseconds << " milliseconds" << endl;
         // cout << endl << "Speedup factor: " <<
         //     cpu_time_milliseconds / gpu_time_milliseconds << endl << endl;
-
+        //
 
 
     // Free memory on host

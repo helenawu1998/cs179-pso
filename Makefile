@@ -7,7 +7,7 @@
 
 # Input Names
 # CUDA_FILES = src/pso.cu
-CPP_FILES = src/pso.cpp
+CPP_FILES = src/pso.cpp src/benchmark_functions.cpp
 
 # ------------------------------------------------------------------------------
 #
@@ -58,14 +58,14 @@ LIBS = -lm
 # LIBS = -L$(CUDA_LIB_PATH) -lcudart -lcufft -lsndfile
 
 # ------------------------------------------------------------------------------
-# Make Rules (Lab 1 specific)
+# Make Rules
 # ------------------------------------------------------------------------------
 
 # C++ Object Files
 OBJ_PSO = $(notdir $(addsuffix .o, $(CPP_FILES)))
 
 # Top level rules
-all: pso
+all: pso benchmark
 
 # pso: $(OBJ_PSO) $(CUDA_OBJ) $(CUDA_OBJ_FILES)
 # 	$(GPP) $(FLAGS) -o pso $(INCLUDE) $^ $(LIBS)
@@ -74,7 +74,7 @@ pso: $(OBJ_PSO)
 
 
 # Compile C++ Source Files
-pso.cpp.o: src/pso.cpp
+%.cpp.o: src/%.cpp
 	$(GPP) $(FLAGS) -c -o $@ $(INCLUDE) $<
 
 
@@ -92,6 +92,7 @@ pso.cpp.o: src/pso.cpp
 # Clean everything including temporary Emacs files
 clean:
 	rm -f pso *.o *~
+	rm -f benchmark *.o *~
 	rm -f src/*~
 
 .PHONY: clean
