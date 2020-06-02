@@ -20,7 +20,6 @@ CUDA_LIB_PATH = $(CUDA_PATH)/lib64
 NVCC = $(CUDA_BIN_PATH)/nvcc
 
 # OS-architecture specific flags
-# OS-architecture specific flags
 ifeq ($(OS_SIZE),32)
 NVCC_FLAGS := -m32
 else
@@ -51,9 +50,6 @@ CUDA_LINK_FLAGS = -dlink -Wno-deprecated-gpu-targets
 # C++ Compiler and Flags
 GPP = g++
 FLAGS = -g -Wall -D_REENTRANT -std=c++0x -pthread
-# INCLUDE = -I../include
-# LIBS = -lm
-
 INCLUDE = -I$(CUDA_INC_PATH)
 LIBS = -L$(CUDA_LIB_PATH) -lcudart
 
@@ -67,8 +63,6 @@ OBJ_PSO = $(notdir $(addsuffix .o, $(CPP_FILES)))
 # Top level rules
 all: pso
 
-# pso: $(OBJ_PSO) $(CUDA_OBJ) $(CUDA_OBJ_FILES)
-# 	$(GPP) $(FLAGS) -o pso $(INCLUDE) $^ $(LIBS)
 pso: $(OBJ_PSO) $(CUDA_OBJ) $(CUDA_OBJ_FILES)
 	$(GPP) $(FLAGS) -o pso $(INCLUDE) $^ $(LIBS)
 
@@ -92,7 +86,6 @@ $(CUDA_OBJ): $(CUDA_OBJ_FILES)
 # Clean everything including temporary Emacs files
 clean:
 	rm -f pso *.o *~
-#	rm -f benchmark *.o *~
 	rm -f src/*~
 
 .PHONY: clean

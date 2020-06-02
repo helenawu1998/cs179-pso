@@ -17,37 +17,6 @@
 #include <curand.h>
 // #include "benchmark_functions.h"
 #include "cuda_header.cuh"
-
-/*
-Atomic-min function. Update address if it is the min.
-
-Source:
-http://stackoverflow.com/questions/17399119/
-cant-we-use-atomic-operations-for-floating-point-variables-in-cuda
-*/
-// __device__ static float atomicMinCost(float* address, float val)
-// {
-//     int* address_as_i = (int*) address;
-//     int old = *address_as_i, assumed;
-//     do {
-//         assumed = old;
-//         old = ::atomicCAS(address_as_i, assumed,
-//             __float_as_int(::fmaxf(val, __int_as_float(assumed))));
-//     } while (assumed != old);
-//     return __int_as_float(old);
-// }
-
-
-// CUDA_CALLABLE
-// void cuda_pso_kernel_convolution(uint thread_index, const float* gpu_raw_data,
-//                                   const float* gpu_blur_v, float* gpu_out_data,
-//                                   const unsigned int n_frames,
-//                                   const unsigned int blur_v_size) {
-//     for (int j = 0; j < blur_v_size && j <= thread_index; j++) {
-//         gpu_out_data[thread_index] += gpu_raw_data[thread_index - j] *
-//             gpu_blur_v[j];
-//     }
-// }
 #define PI 3.14159265358979
 
 /* Benchmark optimization problem known in literature as Rosenbrock's function.
@@ -64,7 +33,7 @@ CUDA_CALLABLE float rosenbrock(float* solution) {
 }
 
 /* Benchmark optimization problem known in literature as the Rastrigin function.
- * The minimum of the function is at (0, 0, 0, 0) with value 0. We search in the
+ * The minimum of the function is at (0, 0, 0 ..) with value 0. We search in the
  * domain [-5.12, 5.12]^dim as in other benchmark tests.
  */
 CUDA_CALLABLE float rastrigin(float* solution, int dim) {
@@ -77,7 +46,7 @@ CUDA_CALLABLE float rastrigin(float* solution, int dim) {
     }
     return ans;
 }
-// // This function will conduct the convolution for a particular thread index
+
 /* Returns the value of the objective function, which we are trying to minimize.
  * User defines which objective function to use for benchmark tests.
  */
@@ -98,9 +67,10 @@ CUDA_CALLABLE float is_min_cost(int objective, float* solution1, float* solution
     return 0;
 }
 
-// This function will run the PSO algorithm until the convergence condition is
-// reached. Each thread represents one particle of the swarm and will do all
-// computations for its position and velocity updates.
+/* This function will run the PSO algorithm until the convergence condition is
+ * reached. Each thread represents one particle of the swarm and will do all
+ * computations for its position and velocity updates.
+ */
 __global__
 void cuda_pso_kernel(float *gpu_solutions, float *gpu_velocities,
                       float *gpu_p_best, float *gpu_g_best,
@@ -117,23 +87,17 @@ void cuda_pso_kernel(float *gpu_solutions, float *gpu_velocities,
     curandState state;
     curand_init(clock64(), thread_index, 0, &state);
 
-    // //      While loop handles all indices
-    // while (thread_index < num_particles) {
-        //  First initialize the personal bests with input solutions
-        gpu_p_best[thread_index] = gpu_solutions[thread_index];
-    //     //  Update the thread index
-    //     thread_index += blockDim.x * gridDim.x;
-    // }
+    //  First initialize the personal bests with input solutions
+    gpu_p_best[thread_index] = gpu_solutions[thread_index];
 
     float r1;
     float r2;
     float temp;
 
-    thread_index = blockIdx.x * blockDim.x + threadIdx.x;
-
     //  Repeat until stopping criteria is satisfied
     while (abs(cost(benchmark, gpu_g_best, dim)) > 0.0001) {
 
+        // r1, r2 are random floats between (0,1] for velocity update equation
         r1 = curand_uniform(&state);
         r2 = curand_uniform(&state);
         // Latency hiding with arithmetic operations and memory accesses
@@ -176,7 +140,7 @@ void cuda_pso_kernel(float *gpu_solutions, float *gpu_velocities,
                     }
                 }
             }
-            // Synchronize threads between steps
+            // Synchronize threads between reduction steps
             __syncthreads();
         }
 
@@ -189,16 +153,18 @@ void cuda_pso_kernel(float *gpu_solutions, float *gpu_velocities,
     }
 }
 
-// This function will be in charge of allocating GPU memory, invoking the kernel
-// for running the PSO algorithm, and cleaning up afterwards. The result
-// will be stored in out_data. The function returns the amount of time that
-// it took for the function to complete (prior to returning) in milliseconds.
+/* This function will be in charge of allocating GPU memory, invoking the kernel
+ * for running the PSO algorithm, and cleaning up afterwards. The result
+ * will be stored in out_data. The function returns the amount of time that
+ * it took for the function to complete (prior to returning) in milliseconds.
+ */
 float cuda_call_pso_kernel(const unsigned int blocks,
                            const unsigned int threads_per_block,
                            float *in_solutions, float *in_velocities,
                            float *out_data, const unsigned int num_particles,
                            const unsigned int dim, const int benchmark,
                            const float c1, const float c2, const float w) {
+
     //       Use the CUDA machinery for recording time
     cudaEvent_t start_gpu, stop_gpu;
     float time_milli = -1;
@@ -209,7 +175,6 @@ float cuda_call_pso_kernel(const unsigned int blocks,
     //       Allocate GPU memory for the raw input data (randomly generated
     //       solutions, velocities in the initial population).
     //       The data is of type float and has dim * num_particles elements.
-    //       We copy the input data into the allocated GPU memory.
     float* gpu_solutions;
     gpu_errchk(cudaMalloc((void **) &gpu_solutions,
         dim * num_particles * sizeof(float)));
@@ -228,7 +193,7 @@ float cuda_call_pso_kernel(const unsigned int blocks,
     gpu_errchk(cudaMalloc((void **) &gpu_p_best,
         dim * num_particles * sizeof(float)));
 
-            //       Allocate GPU memory to store the global best solution, with dim
+    //       Allocate GPU memory to store the global best solution, with dim
     //       number of elements of type float.
     float* gpu_g_best;
     gpu_errchk(cudaMalloc((void **) &gpu_g_best, dim * sizeof(float)));
@@ -259,8 +224,9 @@ float cuda_call_pso_kernel(const unsigned int blocks,
     gpu_errchk(cudaFree(gpu_solutions));
     gpu_errchk(cudaFree(gpu_velocities));
     gpu_errchk(cudaFree(gpu_g_best));
+    gpu_errchk(cudaFree(gpu_p_best));
 
-    // Stop the recording timer and return the computation time
+    //      Stop the recording timer and return the computation time
     cudaEventRecord(stop_gpu);
     cudaEventSynchronize(stop_gpu);
     cudaEventElapsedTime(&time_milli, start_gpu, stop_gpu);

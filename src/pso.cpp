@@ -21,12 +21,9 @@
 
 #include <cuda_runtime.h>
 // #include "benchmark_functions.h"
-// #include <algorithm>
-// #include <cassert>
 
 #include "pso.cuh"
 using namespace std;
-
 
 /* Update the velocity according to the iteration equation of algorithm:
  * http://www.cs.armstrong.edu/saad/csci8100/pso_slides.pdf
@@ -137,11 +134,12 @@ int large_benchmark_test(int argc, char **argv) {
 
         int num_iterations = 0;
         // Optimize until stopping condition reached
-        while (abs(cost(benchmark, g_best, dim)) > 0.0001 && num_iterations < 1e8) {
+        while (abs(cost(benchmark, g_best, dim)) > 0.0001 && num_iterations < 1e6) {
             // cout << "Iteration " << num_iterations << endl;
             // cout << "Global min value: " << cost(benchmark, g_best, dim) << endl << endl;
-            num_iterations += 1;
+
             // Iterate for each particle in the population
+            num_iterations += 1;
             for (int i = 0; i < num_particles; i++) {
                 update_velocity(&velocities[dim*i], &solutions[dim*i], g_best,
                     &p_bests[dim*i], dim, w, c1, c2);
@@ -195,14 +193,25 @@ int large_benchmark_test(int argc, char **argv) {
                                                            num_particles,
                                                            dim, benchmark, c1,
                                                            c2, w);
-
-        cout << "Comparing..." << endl;
+       if (benchmark == 0)
+           cout << "Completed Rosenbrock's Benchmark Test" << endl;
+       else {
+           cout << "Completed Rastrigin's Benchmark Test for " << dim << " dimensions" << endl;
+       }
+       cout << "Global minima for GPU version: " << endl;
+       for (int j = 0; j < dim; j++) {
+           cout << output_host[j] << endl;
+       }
 
         // Compare results
-        bool success = true;
-
-        if (success)
+        cout << "Comparing..." << endl;
+        if (cost(benchmark, output_host, dim) > 0.0001) {
+            cerr << "Error: Did not find sufficiently good solution." << endl;
+        }
+        else {
             cout << endl << "Successful output" << endl;
+        }
+
 
         float cpu_time_milliseconds;
         cudaEventElapsedTime(&cpu_time_milliseconds, start_cpu, stop_cpu);
