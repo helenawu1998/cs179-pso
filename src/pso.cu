@@ -13,6 +13,8 @@
 #include <time.h>
 
 #include <cuda_runtime.h>
+#include <curand_kernel.h>
+#include <curand.h>
 #include "benchmark_functions.h"
 #include "cuda_header.cuh"
 
@@ -61,13 +63,18 @@ void cuda_pso_kernel(float *gpu_solutions, float *gpu_velocities,
     //       Compute the current thread index.
     uint thread_index = blockIdx.x * blockDim.x + threadIdx.x;
     uint tid = threadIdx.x;
-    //      While loop handles all indices
-    while (thread_index < num_particles) {
+
+    //       Init for random number generation
+    curandState state;
+    curand_init(clock64(), thread_index, 0, &state);
+
+    // //      While loop handles all indices
+    // while (thread_index < num_particles) {
         //  First initialize the personal bests with input solutions
         gpu_p_best[thread_index] = gpu_solutions[thread_index];
-        //  Update the thread index
-        thread_index += blockDim.x * gridDim.x;
-    }
+    //     //  Update the thread index
+    //     thread_index += blockDim.x * gridDim.x;
+    // }
 
     float r1;
     float r2;
@@ -78,8 +85,8 @@ void cuda_pso_kernel(float *gpu_solutions, float *gpu_velocities,
     //  Repeat until stopping criteria is satisfied
     while (abs(cost(benchmark, gpu_g_best, dim)) > 0.0001) {
 
-        r1 = ((float) rand()) / RAND_MAX;
-        r2 = ((float) rand()) / RAND_MAX;
+        r1 = curand_uniform(&state);
+        r2 = curand_uniform(&state);
         // Latency hiding with arithmetic operations and memory accesses
         for (int dim_idx = 0; dim_idx < dim; dim_idx++) {
             uint i = thread_index * dim + dim_idx;
@@ -149,6 +156,7 @@ float cuda_call_pso_kernel(const unsigned int blocks,
     cudaEventCreate(&start_gpu);
     cudaEventCreate(&stop_gpu);
     cudaEventRecord(start_gpu);
+    curandState *devStates;
 
     //       Allocate GPU memory for the raw input data (randomly generated
     //       solutions, velocities in the initial population).
