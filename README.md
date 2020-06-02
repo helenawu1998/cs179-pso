@@ -13,7 +13,7 @@ xi(t +1) = xi(t) + vi(t +1)
 
 Here, w, c1, c2 are constant coefficients, i is the particle index, c1, c2 are constant coefficients, r1, r2 are random values regenerated for every update, xi(best)(t) is individual best solution, and g(t) is the global best. We can stop the PSO algorithm once we reach the stopping condition to ensure that we find a sufficiently good solution that minimizes cost.
 
-For a bounded search space, we can penalize solutions that are outside of the domain with a heavy cost. From these equations, we see that PSO balances exploration in global search with the exploitation of local search to find a good solution. 
+For a bounded search space, we can penalize solutions that are outside of the domain with a heavy cost. The update equations demonstrate that PSO balances exploration in global search with the exploitation of local search to find a good solution. 
 
 The PSO algorithm is a useful metaheuristic algorithm because there are few parameters to tune, and the idea is relatively simple. However, solving complex optimization problems often involves high-dimensional search spaces, requiring a large number of particles to explore the domain with high computational costs. Parallelizing PSO would allow us take advantage of the GPU architecture to greatly accelerate the algorithm. 
 
@@ -22,12 +22,12 @@ I designed and implemented a parallelized PSO algorithm to demonstrate how we ca
 
 While the velocity and position updates are fairly straightforward for each particle, the function evaluations are computation-heavy. Thus, we can take advantage of latency hiding to keep the GPU productive during the "waiting time" of memory accesses by performing arithmetic instructions and non-dependent reads in the meantime. 
 
-One challenge was that the velocity update equations require knowing the "global best solution" for each iteration. This requires cooperation across the particles (threads), and inevitably slows down the algorithm. I decided to use shared memory (of size num_threads * dim) and parallel reduction to find the min-cost solution in each block. After synchronizing all the threads in the block, I followed Mark Harris's suggestions with sequential addressing to optimize the parallel reduction for "Optimizing Parallel Reduction in CUDA" so that the threads are efficiently searching for the global best in parallel. Lastly, the thread with threadID 0 will update the global best with shared memory[0] solution if it is the global minimum; while this does cause thread divergence, it is still a better solution than a serial approach for searching for the global best.
+One challenge was that the velocity update equations require knowing the "global best solution" for each iteration. This requires cooperation across the particles (threads), and inevitably slows down the algorithm. I decided to use shared memory (of size num_threads * dim) and parallel reduction to find the min-cost solution in each block. After synchronizing all the threads in the block, I followed Mark Harris's suggestions with sequential addressing to optimize the parallel reduction for "Optimizing Parallel Reduction in CUDA" so that the threads are efficiently searching for the global best in parallel. Lastly, the thread with threadID 0 will update the global best with shared memory[0] solution if it is the global minimum.
 
 ## Code Structure 
 `benchmark.cpp` contains the benchmark problems for the objective cost function (Rosenbrock's, Rastrigin's) and is_min_cost which compares two solutions to determine the lower-cost solution. Header file at `benchmark.h`.
 
-`pso.cpp` contains the CPU version of the PSO algorithm and calls the GPU version. Arguments are `<benchmark test type> <dimension of solution> <number of particles> <threads per block> <max number of blocks>`, where benchmark test type refers to 0 or 1 for Rosenbrock or Rastrigin respectively. Header file at `pso.h`.
+`pso.cpp` contains the CPU version of the PSO algorithm and calls the GPU version. Arguments are `<benchmark test type> <dimension of solution> <number of particles> <threads per block> <max number of blocks>`, where benchmark test type refers to 0 or 1 for Rosenbrock or Rastrigin respectively. 
 
 `pso.cu`contains the GPU version of the PSO algorithm, including the set up, kernel invocation, parallel reduction, and objective functions. Header file at `pso.cuh`.
 
