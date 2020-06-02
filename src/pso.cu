@@ -72,7 +72,6 @@ void cuda_pso_kernel(float *gpu_solutions, float *gpu_velocities,
     float r1;
     float r2;
     float temp;
-    float cost;
 
     thread_index = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -83,7 +82,7 @@ void cuda_pso_kernel(float *gpu_solutions, float *gpu_velocities,
         r2 = ((float) rand()) / RAND_MAX;
         // Latency hiding with arithmetic operations and memory accesses
         for (int dim_idx = 0; dim_idx < dim; dim_idx++) {
-            i = thread_index * dim + dim_idx;
+            uint i = thread_index * dim + dim_idx;
 
             // Update particle's velocity
             temp = 0;
@@ -98,11 +97,11 @@ void cuda_pso_kernel(float *gpu_solutions, float *gpu_velocities,
             sdata[tid * dim + dim_idx] = gpu_solutions[i];
         }
         // Compute cost of updated solution
-        cost = cost(benchmark, &gpu_solutions[thread_index], dim);
+        float solution_cost = cost(benchmark, &gpu_solutions[thread_index], dim);
         // Update personal best if better
-        if (cost < cost(benchmark, &gpu_p_bests[thread_index], dim)) {
+        if (solution_cost < cost(benchmark, &gpu_p_best[thread_index], dim)) {
             for (int i = 0; i < dim; i++) {
-                gpu_p_bests[thread_index + i] = gpu_solutions[thread_index + i];
+                gpu_p_best[thread_index + i] = gpu_solutions[thread_index + i];
             }
         }
 
@@ -114,7 +113,7 @@ void cuda_pso_kernel(float *gpu_solutions, float *gpu_velocities,
         // Reference: "Optimizing Parallel Reduction in CUDA" by Mark Harris
         for (uint s = blockDim.x/2; s > 0; s >>= 1){
             if (tid < s){
-                if is_min_cost(objective, &sdata[tid*dim + s*dim], &sdata[tid*dim], dim) {
+                if (is_min_cost(benchmark, &sdata[tid*dim + s*dim], &sdata[tid*dim], dim)) {
                     // Copy solution elements to smaller index for reduction
                     for (int i = 0; i < dim; i++) {
                         sdata[tid*dim +i] = sdata[tid*dim + s*dim + i];
@@ -126,7 +125,7 @@ void cuda_pso_kernel(float *gpu_solutions, float *gpu_velocities,
         }
 
         // Write result to gpu_g_best if minimum
-        if (tid == 0 && is_min_cost(objective, &sdata, gpu_g_best, dim)) {
+        if (tid == 0 && is_min_cost(benchmark, &sdata[0], gpu_g_best, dim)) {
             for (int i = 0; i < dim; i++) {
                 gpu_g_best[i] = sdata[i];
             }
@@ -140,8 +139,8 @@ void cuda_pso_kernel(float *gpu_solutions, float *gpu_velocities,
 // it took for the function to complete (prior to returning) in milliseconds.
 float cuda_call_pso_kernel(const unsigned int blocks,
                            const unsigned int threads_per_block,
-                           float *in_solutions, float *in_velocities
-                           float *out_data, const unsigned int num_particles
+                           float *in_solutions, float *in_velocities,
+                           float *out_data, const unsigned int num_particles,
                            const unsigned int dim, const int benchmark,
                            const float c1, const float c2, const float w) {
     //       Use the CUDA machinery for recording time
@@ -184,7 +183,7 @@ float cuda_call_pso_kernel(const unsigned int blocks,
 
     //      Call the kernel function.
     cuda_pso_kernel<<<blocks, threads_per_block, threads_per_block * dim * sizeof(float)>>>
-        (gpu_velocities, gpu_p_best, gpu_g_best, num_particles, dim,
+        (gpu_solutions, gpu_velocities, gpu_p_best, gpu_g_best, num_particles, dim,
         benchmark, c1, c2, w);
 
     //      Check for errors on kernel call

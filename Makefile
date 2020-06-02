@@ -55,7 +55,7 @@ FLAGS = -g -Wall -D_REENTRANT -std=c++0x -pthread
 # LIBS = -lm
 
 INCLUDE = -I$(CUDA_INC_PATH)
-LIBS = -L$(CUDA_LIB_PATH)
+LIBS = -L$(CUDA_LIB_PATH) -lcudart
 
 # ------------------------------------------------------------------------------
 # Make Rules
@@ -69,7 +69,7 @@ all: pso benchmark
 
 # pso: $(OBJ_PSO) $(CUDA_OBJ) $(CUDA_OBJ_FILES)
 # 	$(GPP) $(FLAGS) -o pso $(INCLUDE) $^ $(LIBS)
-pso: $(OBJ_PSO)
+pso: $(OBJ_PSO) $(CUDA_OBJ) $(CUDA_OBJ_FILES)
 	$(GPP) $(FLAGS) -o pso $(INCLUDE) $^ $(LIBS)
 
 
