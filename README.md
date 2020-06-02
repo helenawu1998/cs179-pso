@@ -5,7 +5,7 @@ Helena Wu
 Inspired by social organisms in nature, PSO is a metaheuristic algorithm that uses a population of potential solutions (“particle swarm”) to explore the search-space for for an optimization problem. PSO could benefit from GPU acceleration because many of its computations could be computed in parallel, which may allow faster exploration of large search spaces.
 
 ## PSO Algorithm Overview
-Particle swarm optimization is a population-based approach for solving optimization problems. The objective function f(X) of an optimization problem determines the cost of a potential solution, which is encoded as a vector X=[x1   x2   x3 …. xn] (with dimension dim). In PSO, each potential solution aka particle in the swarm has its own position vector (Xit) and velocity vector (Vit)  for each iteration t. In each iteration, first update the individual and global best solutions, then update all position and velocity vectors as follows: 
+Particle swarm optimization is a population-based approach for solving optimization problems. The objective function f(X) of an optimization problem determines the cost of a potential solution, which is encoded as a vector X=[x1   x2   x3 …. xn] with dimension `dim`. In PSO, each potential solution (aka particle) in the swarm has its own position vector (Xit) and velocity vector (Vit)  for each iteration t. In each iteration, first update the individual and global best solutions, then update all position and velocity vectors as follows: 
 
 vi(t +1) = wvi(t)+ c1r1[xi(best)(t) − xi(t)]+ c2r2[g(t) − xi(t)]
 
