@@ -43,3 +43,12 @@ float cost(int objective, float* solution, int dim) {
         return rastrigin(solution, dim);
     }
 }
+
+/* Returns 1 if solution 1 < solution 2, and returns 0 otherwise.
+ */
+float is_min_cost(int objective, float* solution1, float* solution2, int dim) {
+    if (cost(objective, solution1, dim) < cost(objective, solution2, dim)) {
+        return 1
+    }
+    return 0
+}
