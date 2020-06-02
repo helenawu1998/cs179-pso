@@ -15,7 +15,7 @@
 #include <cuda_runtime.h>
 #include <curand_kernel.h>
 #include <curand.h>
-#include "benchmark_functions.h"
+// #include "benchmark_functions.h"
 #include "cuda_header.cuh"
 
 /*
@@ -156,7 +156,6 @@ float cuda_call_pso_kernel(const unsigned int blocks,
     cudaEventCreate(&start_gpu);
     cudaEventCreate(&stop_gpu);
     cudaEventRecord(start_gpu);
-    curandState *devStates;
 
     //       Allocate GPU memory for the raw input data (randomly generated
     //       solutions, velocities in the initial population).

@@ -11,7 +11,7 @@
 #include <cstdio>
 #include <curand.h>
 #include "cuda_header.cuh"
-#include "benchmark_functions.h"
+// #include "benchmark_functions.h"
 using namespace std;
 
 /*

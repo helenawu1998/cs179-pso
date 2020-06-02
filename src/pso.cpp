@@ -20,7 +20,7 @@
 #include <time.h>
 
 #include <cuda_runtime.h>
-#include "benchmark_functions.h"
+// #include "benchmark_functions.h"
 // #include <algorithm>
 // #include <cassert>
 
