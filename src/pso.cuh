@@ -44,7 +44,7 @@ inline void gpu_assert(cudaError_t code, const char *file, int line,
 // it took for the function to complete (prior to returning) in milliseconds.
 float cuda_call_pso_kernel(const unsigned int blocks,
                            const unsigned int threads_per_block,
-                           float *in_solutions, float *in_velocities
+                           float *in_solutions, float *in_velocities,
                            float *out_data, const unsigned int num_particles
                            const unsigned int dim, const int benchmark,
                            const float c1, const float c2, const float w);

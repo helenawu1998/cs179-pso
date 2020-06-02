@@ -193,7 +193,8 @@ int large_benchmark_test(int argc, char **argv) {
                                                            velocities_host,
                                                            output_host,
                                                            num_particles,
-                                                           dim, c1, c2, w);
+                                                           dim, benchmark, c1,
+                                                           c2, w);
 
         cout << "Comparing..." << endl;
 
