@@ -198,10 +198,6 @@ int large_benchmark_test(int argc, char **argv) {
        else {
            cout << "Completed Rastrigin's Benchmark Test for " << dim << " dimensions" << endl;
        }
-       cout << "Global minima for GPU version: " << endl;
-       for (int j = 0; j < dim; j++) {
-           cout << output_host[j] << endl;
-       }
 
         // Compare results
         cout << "Comparing..." << endl;
@@ -209,7 +205,7 @@ int large_benchmark_test(int argc, char **argv) {
             cerr << "Error: Did not find sufficiently good solution." << endl;
         }
         else {
-            cout << endl << "Successful output" << endl;
+            cout << endl << "Success: GPU PSO found sufficient global minima." << endl;
         }
 
 
